@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  web:
+    image: nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    depends_on:
+     - app
+    ports:
+    - 80:80
+  db:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=superSecret123
+      - DB_NAME=my-app_development
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    ports:
+      - 5432
+  app:
+    build: .
+    environment:
+      - RAILS_ENV=development
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=superSecret123
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+
+      #docker-compose run --rm app bin/rails db:setup

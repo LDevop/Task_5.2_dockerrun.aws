@@ -1,0 +1,84 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "volumes": [
+      {
+        "name": "php-app",
+        "host": {
+          "sourcePath": "/var/app/current/php-app"
+        }
+      },
+      {
+        "name": "nginx-proxy-conf",
+        "host": {
+          "sourcePath": "/var/app/current/proxy/conf.d"
+        }
+      }
+    ],
+    "containerDefinitions": [
+      {
+        "name": "db",
+        "image": "postgres:9.6",
+        "environment": [
+          {
+            "name": "POSTGRES_USER",
+            "value": "postgres"
+          },
+          {
+            "name": "POSTGRES_PASSWORD",
+            "value": "superSecret123"
+          },
+          {
+            "name": "DB_NAME",
+            "value": "my-app_development"
+          }
+        ],
+        "essential": true,
+        "memory": 128,
+        "portMappings": [
+            {
+            "containerPort": 5432,
+            "hostPort": 5432
+        }
+    ],
+        "mountPoints": [
+          {
+            "sourceVolume": "/postgres",
+            "containerPath": "/var/lib/postgresql/data",
+            "readOnly": true
+          }
+        ]
+      },
+      {
+        "name": "web",
+        "image": "nginx",
+        "essential": true,
+        "memory": 128,
+        "portMappings": [
+          {
+            "hostPort": 80,
+            "containerPort": 80
+          }
+        ],
+        "links": [
+          "php-app"
+        ],
+        "mountPoints": [
+          {
+            "sourceVolume": "php-app",
+            "containerPath": "/var/www/html",
+            "readOnly": true
+          },
+          {
+            "sourceVolume": "nginx-proxy-conf",
+            "containerPath": "/etc/nginx/conf.d",
+            "readOnly": true
+          },
+          {
+            "sourceVolume": "awseb-logs-nginx-proxy",
+            "containerPath": "/var/log/nginx"
+          }
+        ]
+      }
+    ]
+  }
+  
